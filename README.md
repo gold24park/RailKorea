@@ -84,8 +84,17 @@ RailKorea 플러그인은 마인크래프트 반야생에 도움되는 기능들
 - 5: 빨간색
 
 
-## 의존성
-[주의] 이 플러그인은 `ProtocolLib` 이 설치된 서버에서 작동합니다.
+## 다운로드 링크
+- RailKorea  
+https://www.dropbox.com/s/qfgd3a9l8lphxwa/RailKorea.jar?dl=0
+- ProtocolLib (필수 라이브러리)
+https://ci.dmulloy2.net/job/ProtocolLib/lastSuccessfulBuild/
+
+## 주의사항
+#### 리셋
+새로운 사람들과 새로운 기록으로 시작하고 싶다면 서버의 `plugins` 폴더 내에 `RailKorea` 폴더를 삭제 후 , 서버를 재시작해주세요.
+#### 의존성
+이 플러그인은 `ProtocolLib` 이 설치된 서버에서 작동합니다.
 `ProtocolLib`은 [이 사이트](https://ci.dmulloy2.net/job/ProtocolLib/lastSuccessfulBuild/)에서 `jar` 파일을 받아 Plugin 설치와 동일하게 해주시면됩니다.
 
 ## 만든이
