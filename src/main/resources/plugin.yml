@@ -1,0 +1,40 @@
+name: RailKorea
+version: ${project.version}
+main: gold24park.railkorea.RailKorea
+depend: [ProtocolLib]
+api-version: 1.16
+commands:
+  money:
+    description: OP Amount만큼의 돈을 줌
+    usage: "사용법: /<command> [nickname|amount] [amount]"
+  create_merchant:
+    description: OP 상인을 생성
+    usage: "사용법: /<command> [x] [z]"
+  create_buyer:
+    description: OP 매입인을 생성
+    usage: "사용법: /<command> [x] [z]"
+  register:
+    description: OP 직업을 임명함
+    usage: "사용법: /<command> [nickname] [profession]"
+  edit_merchant:
+    description: OP 상인이 판매하는 품목 수정
+  edit_buyer:
+    description: OP 매입인이 매입하는 품목 수정
+  home:
+    description: 내 스폰 지점 좌표 반환
+  destination:
+    description: 목적지 x, z 좌표를 설정, 항상 보이게 한다.
+    usage: "사용법: /<command> [x] [z]"
+  hud:
+    description: 현재 좌표를 보여주는 HUD를 ON/OFF 한다.
+    aliases: [on, off]
+    usage: "사용법: /<command> [on|off]"
+  whereis:
+    description: 상대방의 좌표를 목적지로 등록합니다.
+    usage: "사용법: /<command> [nickname]"
+  map:
+    description: 공용 좌표를 수정하고 읽을 수있는 책을 얻는다.
+permissions:
+  admin:
+    description: 킹갓 관리자
+    default: op
