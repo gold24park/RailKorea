@@ -1,5 +1,6 @@
 package gold24park.railkorea.module;
 
+import gold24park.railkorea.util.Util;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -9,6 +10,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Biome;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerEditBookEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerTakeLecternBookEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -19,22 +21,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static gold24park.railkorea.RailKorea.config;
-
 public class LocationModule {
 
+    private Plugin main;
     private static LocationModule instance;
     private final static String MAP_BOOK_TITLE = "공용 좌표책";
     private final static String MAP_BOOK_AUTHOR = "Rail";
     private HashMap<Biome, String> allowedBiomes = new HashMap<>();
 
-    public static LocationModule getInstance() {
+    public static LocationModule getInstance(Plugin main) {
         if (instance == null)
-            instance = new LocationModule();
+            instance = new LocationModule(main);
         return instance;
     }
 
-    public LocationModule() {
+    private LocationModule(Plugin main) {
+        this.main = main;
         allowedBiomes.put(Biome.JUNGLE, "정글");
         allowedBiomes.put(Biome.BAMBOO_JUNGLE, "대나무 정글");
         allowedBiomes.put(Biome.MUSHROOM_FIELDS, "버섯 들판");
@@ -52,10 +54,10 @@ public class LocationModule {
         allowedBiomes.put(Biome.ICE_SPIKES, "역고드름");
     }
 
-    public void run(final Plugin plugin) {
+    public void run() {
         // tick 마다 좌표 표시
         int tick = 10;
-        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, new Runnable() {
+        Bukkit.getScheduler().runTaskTimerAsynchronously(main, new Runnable() {
             @Override
             public void run() {
                 for (Player player : Bukkit.getServer().getOnlinePlayers()) {
@@ -65,21 +67,34 @@ public class LocationModule {
         }, 0L, tick);
     }
 
+    public void setHudVisibility(Player player, String[] args) {
+        if (args != null && args.length > 0) {
+            if (args[0].equalsIgnoreCase("on")) {
+                main.getConfig().set("hide_hud." + player.getName(), 0);
+                player.sendMessage(ChatColor.DARK_GRAY + "[!] HUD를 띄웁니다.");
+            }
+            else if (args[0].equalsIgnoreCase("off")) {
+                main.getConfig().set("hide_hud." + player.getName(), 1);
+                player.sendMessage(ChatColor.DARK_GRAY + "[!] HUD가 숨겨졌습니다.");
+            }
+            else {
+                player.sendMessage(ChatColor.RED + "[!] /hud on 또는 off를 입력 해 주시오.");
+            }
+            main.saveConfig();
+        }
+    }
+
     private void showLocationHud(Player player) {
-        boolean hideHud = config.getInt("hide_hud." + player.getName()) == 1;
+        boolean hideHud = main.getConfig().getInt("hide_hud." + player.getName()) == 1;
         if (!hideHud) {
             Location location = player.getLocation();
             String destMessage = "";
-            int x = config.getInt("destination." + player.getName() + ".x");
-            int z = config.getInt("destination." + player.getName() + ".z");
+            int x = main.getConfig().getInt("destination." + player.getName() + ".x");
+            int z = main.getConfig().getInt("destination." + player.getName() + ".z");
             if (x != 0 || z != 0) {
-                destMessage = ChatColor.GOLD + "[목적지] " + ChatColor.GRAY + "XZ: "
-                      + x + " / " + z + ChatColor.WHITE + " | ";
+                destMessage = ChatColor.GOLD + "[목적지] " + ChatColor.GRAY + Util.getLocationText(x, z) + " ";
             }
-            String message = destMessage + ChatColor.GRAY + "[XYZ: " +
-                    location.getBlockX() + " / " +
-                    location.getBlockY() + " / " +
-                    location.getBlockZ() + "]";
+            String message = destMessage + ChatColor.GRAY + Util.getLocationText(location);
             player.spigot().sendMessage(
                     ChatMessageType.ACTION_BAR,
                     TextComponent.fromLegacyText(message)
@@ -93,8 +108,9 @@ public class LocationModule {
 
         BookMeta bookMeta = (BookMeta) book.getItemMeta();
 
-        List<String> pages = config.getStringList("map_book_meta");
+        List<String> pages = main.getConfig().getStringList("map_book_meta");
         bookMeta.setPages(pages);
+        bookMeta.setDisplayName(MAP_BOOK_TITLE);
         bookMeta.setTitle(MAP_BOOK_TITLE);
         bookMeta.setAuthor(MAP_BOOK_AUTHOR);
         bookMeta.setGeneration(BookMeta.Generation.TATTERED); // Unused; unobtainable by players.
@@ -109,29 +125,46 @@ public class LocationModule {
         player.openInventory(gui);
     }
 
+    public void openMap(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        ItemStack item = player.getInventory().getItemInMainHand();
+        if (item.getType() == Material.WRITABLE_BOOK) {
+            BookMeta bookMeta = (BookMeta) item.getItemMeta();
+            if (isMapBook(bookMeta)) {
+                List<String> pages = main.getConfig().getStringList("map_book_meta");
+                bookMeta.setPages(pages);
+                item.setItemMeta(bookMeta);
+            }
+        }
+    }
+
+    private boolean isMapBook(BookMeta bookMeta) {
+        return bookMeta != null && bookMeta.getGeneration() == BookMeta.Generation.TATTERED &&
+                bookMeta.getTitle().equalsIgnoreCase(MAP_BOOK_TITLE) &&
+                bookMeta.getDisplayName().equalsIgnoreCase(MAP_BOOK_TITLE);
+    }
+
     public void saveMap(PlayerEditBookEvent event) {
         BookMeta newBookMeta = event.getNewBookMeta();
-        if (newBookMeta.getGeneration() == BookMeta.Generation.TATTERED &&
-        newBookMeta.getTitle().equalsIgnoreCase(MAP_BOOK_TITLE)) {
+        if (isMapBook(newBookMeta)) {
             // 지도 수정 책이라면 저장
-            config.set("map_book_meta", newBookMeta.getPages());
+            main.getConfig().set("map_book_meta", newBookMeta.getPages());
             event.getPlayer().sendMessage(ChatColor.GREEN + "[!] 등록하신 좌표가 공유되었습니다.");
         }
     }
 
     public void saveMap(PlayerTakeLecternBookEvent event) {
         BookMeta newBookMeta = (BookMeta) event.getBook().getItemMeta();
-        if (newBookMeta.getGeneration() == BookMeta.Generation.TATTERED &&
-                newBookMeta.getTitle().equalsIgnoreCase(MAP_BOOK_TITLE)) {
+        if (isMapBook(newBookMeta)) {
             // 지도 수정 책이라면 저장
-            config.set("map_book_meta", newBookMeta.getPages());
+            main.getConfig().set("map_book_meta", newBookMeta.getPages());
             event.getPlayer().sendMessage(ChatColor.GREEN + "[!] 등록하신 좌표가 공유되었습니다.");
         }
     }
 
 
     // 바이옴 최초 발견 체크
-    public void checkBiome(Plugin plugin, Player player) {
+    public void checkBiome(Player player) {
         Biome biome = player.getWorld().getBiome(
                 player.getLocation().getBlockX(),
                 player.getLocation().getBlockY(),
@@ -140,35 +173,33 @@ public class LocationModule {
         if (allowedBiomes.containsKey(biome)) {
             final String xKey = "found_biomes." + biome.name() + ".x";
             final String zKey = "found_biomes." + biome.name() + ".z";
-            int x = config.getInt(xKey);
-            int z = config.getInt(zKey);
+            int x = main.getConfig().getInt(xKey);
+            int z = main.getConfig().getInt(zKey);
             if (x == 0 && z == 0) {
                 // 아직 아무도 가지 않은 땅일때
                 x = player.getLocation().getBlockX();
                 z = player.getLocation().getBlockZ();
                 String message = ChatColor.AQUA + "■ " + player.getName() + "님이 " +
                         allowedBiomes.get(biome) +
-                        " 바이옴을 발견하였습니다. [XYZ: " +
-                        x + "/" +
-                        player.getLocation().getBlockY() + "/" +
-                        z + "]";
-                
-                config.set(xKey, x);
-                config.set(zKey, z);
+                        " 바이옴을 발견하였습니다. " +
+                        Util.getLocationText(x, player.getLocation().getBlockY(), z);
+
+                main.getConfig().set(xKey, x);
+                main.getConfig().set(zKey, z);
                     
                 autoRecord(allowedBiomes.get(biome), x, z);
                 
                 Bukkit.broadcastMessage(message);
                 Bukkit.broadcastMessage(ChatColor.AQUA + "해당 좌표가 자동기록되었습니다. map 커맨드로 확인하세요 :)");
 
-                plugin.saveConfig();
+                main.saveConfig();
             }
         }
     }
     
     // 책에 좌표 자동 기록
     private void autoRecord(String name, int x, int z) {
-        List<String> pages = config.getStringList("map_book_meta");
+        List<String> pages = main.getConfig().getStringList("map_book_meta");
         String page = pages.get(pages.size() - 1);
         int lines = page.split("\n").length + 1;
         final int maxLines = 13; // 한 페이지에 쓸 수있는 최대 행
@@ -179,6 +210,6 @@ public class LocationModule {
         } else {
             pages.add(bookMessage);
         }
-        config.set("map_book_meta", pages);
+        main.getConfig().set("map_book_meta", pages);
     }
 }

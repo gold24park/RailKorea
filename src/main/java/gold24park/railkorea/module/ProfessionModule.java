@@ -1,20 +1,25 @@
 package gold24park.railkorea.module;
 
-import gold24park.railkorea.RailKorea;
-import gold24park.railkorea.Util;
+import gold24park.railkorea.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 public class ProfessionModule {
 
     private static ProfessionModule instance;
+    private Plugin main;
 
-    public static ProfessionModule getInstance() {
+    public static ProfessionModule getInstance(Plugin main) {
         if (instance == null)
-            instance = new ProfessionModule();
+            instance = new ProfessionModule(main);
         return instance;
+    }
+
+    private ProfessionModule(Plugin main) {
+        this.main = main;
     }
 
     private ChatColor getProfessionColor(int level) {
@@ -47,10 +52,11 @@ public class ProfessionModule {
             if (args.length >= 3) {
                 level = Util.parseInt(args[2]);
             }
-            RailKorea.config.set("profession." + nickname, profession);
-            RailKorea.config.set("level." + nickname, level);
+            main.getConfig().set("profession." + nickname, profession);
+            main.getConfig().set("level." + nickname, level);
             player.setPlayerListName("[" + getProfessionColor(level) +  profession + ChatColor.WHITE + "] " + player.getName());
             player.sendMessage(ChatColor.GREEN + "[!] " + nickname + "(은)는 " + profession + "입니다. (설정레벨: " + level + ")");
+            main.saveConfig();
         }
     }
 
@@ -66,8 +72,8 @@ public class ProfessionModule {
 
     public void chat(Player player, String message) {
         String chat = player.getName();
-        String profession = RailKorea.config.getString("profession." + player.getName());
-        int level = RailKorea.config.getInt("level." + player.getName());
+        String profession = main.getConfig().getString("profession." + player.getName());
+        int level = main.getConfig().getInt("level." + player.getName());
         if (profession != null) {
             chat = "[" + getProfessionColor(level) +  profession + ChatColor.WHITE + "] " + player.getName();
         }
@@ -76,8 +82,8 @@ public class ProfessionModule {
     }
 
     private String getPlayerListText(OfflinePlayer player) {
-        String profession = RailKorea.config.getString("profession." + player.getName());
-        int level = RailKorea.config.getInt("level." + player.getName());
+        String profession = main.getConfig().getString("profession." + player.getName());
+        int level = main.getConfig().getInt("level." + player.getName());
         String message = "";
         if (Util.isEmpty(profession)) {
             message += ChatColor.GRAY + "[직업없음] ";

@@ -1,6 +1,6 @@
 name: RailKorea
 version: ${project.version}
-main: gold24park.railkorea.RailKorea
+main: gold24park.railkorea.Main
 depend: [ProtocolLib]
 api-version: 1.16
 commands:

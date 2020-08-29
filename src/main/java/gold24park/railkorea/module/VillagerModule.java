@@ -1,6 +1,7 @@
 package gold24park.railkorea.module;
 
 import gold24park.railkorea.model.StoreItem;
+import gold24park.railkorea.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -13,9 +14,10 @@ import org.bukkit.entity.Villager;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.MerchantRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 
 import java.io.File;
@@ -25,12 +27,18 @@ import java.util.List;
 public class VillagerModule {
 
     private static VillagerModule instance;
+    private final Plugin main;
 
-    public static VillagerModule getInstance() {
+    public static VillagerModule getInstance(Plugin main) {
         if (instance == null)
-            instance = new VillagerModule();
-
+            instance = new VillagerModule(main);
         return instance;
+    }
+
+    private VillagerModule(Plugin main) {
+        this.main = main;
+        initSellingItems();
+        initBuyingItems();
     }
 
     // 판매 아이템, 가격
@@ -54,6 +62,8 @@ public class VillagerModule {
         villager.setProfession(Villager.Profession.NONE);
         villager.setCustomName(MERCHANT_NAME);
         player.sendMessage(ChatColor.GREEN + "[!] 새로운 상인이 생성되었습니다.");
+
+        initializeMerchantInventorySettings(player);
     }
 
     public void createBuyer(Player player, String[] args) {
@@ -65,10 +75,12 @@ public class VillagerModule {
         villager.setProfession(Villager.Profession.NONE);
         villager.setCustomName(BUYER_NAME);
         player.sendMessage(ChatColor.GREEN + "[!] 새로운 매입인이 생성되었습니다.");
+
+        initializeBuyerInventorySettings(player);
     }
 
     // 판매 아이템 기본값
-    public void initSellingItems() {
+    private void initSellingItems() {
         SELLING_ITEM_LIST.clear();
         SELLING_ITEM_LIST.add(new StoreItem(Material.DIAMOND, 1, 64));
         SELLING_ITEM_LIST.add(new StoreItem(Material.BLAZE_ROD, 1, 9));
@@ -85,7 +97,7 @@ public class VillagerModule {
         SELLING_ITEM_LIST.add(new StoreItem(Material.CLAY_BALL, 16, 1));
     }
 
-    public void initBuyingItems() {
+    private void initBuyingItems() {
         BUYING_ITEM_LIST.clear();
         BUYING_ITEM_LIST.add(new StoreItem(Material.DIAMOND, 1, 32));
         BUYING_ITEM_LIST.add(new StoreItem(Material.EMERALD, 1, 6));
@@ -107,21 +119,21 @@ public class VillagerModule {
         BUYING_ITEM_LIST.add(new StoreItem(Material.EGG, 3, 1));
     }
 
-    public List<MerchantRecipe> getMerchantRecipes(JavaPlugin plugin, Player player) {
-        return getRecipes(plugin, player, true);
+    public List<MerchantRecipe> getMerchantRecipes(Player player) {
+        return getRecipes(player, true);
     }
 
-    public List<MerchantRecipe> getBuyerRecipes(JavaPlugin plugin, Player player) {
-        return getRecipes(plugin, player, false);
+    public List<MerchantRecipe> getBuyerRecipes(Player player) {
+        return getRecipes(player, false);
     }
 
-    private List<MerchantRecipe> getRecipes(JavaPlugin plugin, Player player, boolean isMerchant) {
+    private List<MerchantRecipe> getRecipes(Player player, boolean isMerchant) {
         String title = isMerchant ? MERCHANT_SETTING_INVENTORY_TITLE : BUYER_SETTING_INVENTORY_TITLE;
         String fileName = isMerchant ? MERCHANT_INVENTORY_CONFIG_FILENAME : BUYER_INVENTORY_CONFIG_FILENAME;
 
         List<MerchantRecipe> recipeList = new ArrayList<>();
         Inventory inventory = Bukkit.getServer().createInventory(player, 54, title);
-        restoreInventory(plugin, inventory, fileName);
+        restoreInventory(main, inventory, fileName);
         MerchantRecipe recipe = null;
 
         for (int i = 0; i < inventory.getSize(); i++) {
@@ -174,10 +186,17 @@ public class VillagerModule {
         return location;
     }
 
-    public void openMerchantInventorySettings(JavaPlugin plugin, Player player) {
+    public void openMerchantInventorySettings(Player player) {
         Inventory inventory = Bukkit.getServer().createInventory(player, 54, MERCHANT_SETTING_INVENTORY_TITLE);
-        inventory = restoreInventory(plugin, inventory, MERCHANT_INVENTORY_CONFIG_FILENAME);
-        if (inventory.getContents().length == 0 || inventory.getContents()[0] == null) {
+        inventory = restoreInventory(main, inventory, MERCHANT_INVENTORY_CONFIG_FILENAME);
+        player.openInventory(inventory);
+    }
+
+    private void initializeMerchantInventorySettings(Player player) {
+        Inventory inventory = Bukkit.getServer().createInventory(player, 54, MERCHANT_SETTING_INVENTORY_TITLE);
+        inventory = restoreInventory(main, inventory, MERCHANT_INVENTORY_CONFIG_FILENAME);
+        if (Util.isEmpty(inventory)) {
+            player.sendMessage(ChatColor.GRAY + "[!] 판매항목이 초기화 되었습니다.");
             // 초기화 시켜주기
             int cursor = 0;
             for (StoreItem storeItem : SELLING_ITEM_LIST) {
@@ -202,14 +221,21 @@ public class VillagerModule {
                 }
                 cursor++;
             }
+            saveInventory(main, inventory, MERCHANT_INVENTORY_CONFIG_FILENAME);
         }
-        player.openInventory(inventory);
     }
 
-    public void openBuyerInventorySettings(JavaPlugin plugin, Player player) {
+    public void openBuyerInventorySettings(Player player) {
         Inventory inventory = Bukkit.getServer().createInventory(player, 54, BUYER_SETTING_INVENTORY_TITLE);
-        inventory = restoreInventory(plugin, inventory, BUYER_INVENTORY_CONFIG_FILENAME);
-        if (inventory.getContents().length == 0 || inventory.getContents()[0] == null) {
+        inventory = restoreInventory(main, inventory, BUYER_INVENTORY_CONFIG_FILENAME);
+        player.openInventory(inventory);
+    }
+
+    private void initializeBuyerInventorySettings(Player player) {
+        Inventory inventory = Bukkit.getServer().createInventory(player, 54, BUYER_SETTING_INVENTORY_TITLE);
+        inventory = restoreInventory(main, inventory, BUYER_INVENTORY_CONFIG_FILENAME);
+        if (Util.isEmpty(inventory)) {
+            player.sendMessage(ChatColor.GRAY + "[!] 매입항목이 초기화 되었습니다.");
             // 초기화 시켜주기
             int cursor = 0;
             for (StoreItem storeItem : SELLING_ITEM_LIST) {
@@ -234,19 +260,30 @@ public class VillagerModule {
                 }
                 cursor++;
             }
+            saveInventory(main, inventory, BUYER_INVENTORY_CONFIG_FILENAME);
         }
-        player.openInventory(inventory);
     }
 
-    public void onInventoryClosed(JavaPlugin plugin, InventoryCloseEvent event) {
+    public void openTradingGUI(Player player, boolean isMerchant) {
+        String storeName = main.getConfig().getString(isMerchant ?
+                "store_name.merchant" : "store_name.buyer");
+        Merchant merchant = Bukkit.createMerchant(storeName);
+        merchant.setRecipes(
+                isMerchant ?
+                        getMerchantRecipes(player) :
+                        getBuyerRecipes(player));
+        player.openMerchant(merchant, true);
+    }
+
+    public void onInventoryClosed(InventoryCloseEvent event) {
         // 상인 및 매입인 세팅 인벤토리를 닫을때는 내용을 저장한다.
         String inventoryTitle = event.getView().getTitle();
         if (inventoryTitle.equalsIgnoreCase(MERCHANT_SETTING_INVENTORY_TITLE)) {
-            saveInventory(plugin, event.getInventory(), MERCHANT_INVENTORY_CONFIG_FILENAME);
+            saveInventory(main, event.getInventory(), MERCHANT_INVENTORY_CONFIG_FILENAME);
             event.getPlayer().sendMessage(ChatColor.GREEN + "[!] 판매 항목 변경사항이 저장되었습니다.");
         }
         else if (inventoryTitle.equalsIgnoreCase(BUYER_SETTING_INVENTORY_TITLE)) {
-            saveInventory(plugin, event.getInventory(), BUYER_INVENTORY_CONFIG_FILENAME);
+            saveInventory(main, event.getInventory(), BUYER_INVENTORY_CONFIG_FILENAME);
             event.getPlayer().sendMessage(ChatColor.GREEN + "[!] 매입 항목 변경사항이 저장되었습니다.");
         }
     }
@@ -264,7 +301,7 @@ public class VillagerModule {
     }
 
     // 인벤토리 yml 파일에 저장
-    private void saveInventory(JavaPlugin plugin, Inventory inventory, String fileName) {
+    private void saveInventory(Plugin plugin, Inventory inventory, String fileName) {
         try {
             File file = new File(plugin.getDataFolder().getAbsolutePath(), fileName);
             FileConfiguration configuration = YamlConfiguration.loadConfiguration(file);
@@ -276,7 +313,7 @@ public class VillagerModule {
     }
 
     // yml 파일에서 인벤토리 복구
-    private Inventory restoreInventory(JavaPlugin plugin, Inventory inventory, String fileName) {
+    private Inventory restoreInventory(Plugin plugin, Inventory inventory, String fileName) {
         try {
             File file = new File(plugin.getDataFolder().getAbsolutePath(), fileName);
             FileConfiguration configuration = YamlConfiguration.loadConfiguration(file);

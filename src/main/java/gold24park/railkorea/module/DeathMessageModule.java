@@ -1,18 +1,24 @@
 package gold24park.railkorea.module;
 
-import gold24park.railkorea.RailKorea;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.plugin.Plugin;
 
 public class DeathMessageModule {
-    private static DeathMessageModule instance;
 
-    public static DeathMessageModule getInstance() {
+    private static DeathMessageModule instance;
+    private final Plugin main;
+
+    public static DeathMessageModule getInstance(Plugin main) {
         if (instance == null)
-            instance = new DeathMessageModule();
+            instance = new DeathMessageModule(main);
         return instance;
+    }
+
+    private DeathMessageModule(Plugin main) {
+        this.main = main;
     }
 
     public void broadcast(PlayerDeathEvent event) {
@@ -22,11 +28,11 @@ public class DeathMessageModule {
         String key = "count_death." + player.getName();
         int countDeath = 0;
         try {
-            countDeath = RailKorea.config.getInt(key);
+            countDeath = main.getConfig().getInt(key);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        RailKorea.config.set(key, ++countDeath);
+        main.getConfig().set(key, ++countDeath);
 
         Bukkit.broadcastMessage(deathMessage +
                 ChatColor.ITALIC + " " + ChatColor.GOLD + "(" + countDeath + "번째 죽음을 맞이함)");
