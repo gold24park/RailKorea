@@ -1,6 +1,8 @@
 package gold24park.railkorea.util;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -44,4 +46,27 @@ public class Util {
         }
         return isEmpty;
     }
+
+    public static Player findPlayer(String nickname) {
+        Player targetPlayer = null;
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (p.getName().equalsIgnoreCase(nickname)) {
+                targetPlayer = p;
+                break;
+            }
+        }
+        return targetPlayer;
+    }
+
+    public static Player findPlayer(String nickname, Player defaultPlayer) {
+        Player targetPlayer = defaultPlayer;
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (p.getName().equalsIgnoreCase(nickname)) {
+                targetPlayer = p;
+                break;
+            }
+        }
+        return targetPlayer;
+    }
+
 }

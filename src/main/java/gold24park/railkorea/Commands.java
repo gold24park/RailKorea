@@ -8,7 +8,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-import org.jetbrains.annotations.NotNull;
 
 public class Commands {
     private Plugin main;
@@ -16,7 +15,7 @@ public class Commands {
     public Commands(Plugin main) {
         this.main = main;
     }
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull String label, @NotNull String[] args) {
+    public boolean onCommand(CommandSender sender, String label, String[] args) {
         Player player = (Player) sender;
         if (player.hasPermission("admin")) {
             resolveOpUserCommand(player, label, args);

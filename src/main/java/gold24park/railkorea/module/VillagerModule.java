@@ -26,21 +26,6 @@ import java.util.List;
 
 public class VillagerModule {
 
-    private static VillagerModule instance;
-    private final Plugin main;
-
-    public static VillagerModule getInstance(Plugin main) {
-        if (instance == null)
-            instance = new VillagerModule(main);
-        return instance;
-    }
-
-    private VillagerModule(Plugin main) {
-        this.main = main;
-        initSellingItems();
-        initBuyingItems();
-    }
-
     // 판매 아이템, 가격
     public final List<StoreItem> SELLING_ITEM_LIST = new ArrayList<>();
     public final List<StoreItem> BUYING_ITEM_LIST = new ArrayList<>();
@@ -54,9 +39,29 @@ public class VillagerModule {
     public final String MERCHANT_NAME = "상인";
     public final String BUYER_NAME = "매입인";
 
+    private static VillagerModule instance;
+    private final Plugin main;
+
+
+    public static VillagerModule getInstance(Plugin main) {
+        if (instance == null)
+            instance = new VillagerModule(main);
+        return instance;
+    }
+
+    private VillagerModule(Plugin main) {
+        this.main = main;
+        initSellingItems();
+        initBuyingItems();
+    }
+
     public void createMerchant(Player player, String[] args) {
+        Player targetPlayer = null;
+        if (args.length > 0) {
+            targetPlayer = Util.findPlayer(args[0], player);
+        }
         Villager villager = (Villager) player.getWorld().spawnEntity(
-                getLocation(player, args),
+                getLocation(targetPlayer),
                 EntityType.VILLAGER
         );
         villager.setProfession(Villager.Profession.NONE);
@@ -67,8 +72,12 @@ public class VillagerModule {
     }
 
     public void createBuyer(Player player, String[] args) {
+        Player targetPlayer = null;
+        if (args.length > 0) {
+            targetPlayer = Util.findPlayer(args[0], player);
+        }
         Villager villager = (Villager) player.getWorld().spawnEntity(
-                getLocation(player, args),
+                getLocation(targetPlayer),
                 EntityType.VILLAGER
         );
         villager.setVillagerType(Villager.Type.SNOW);
@@ -162,27 +171,19 @@ public class VillagerModule {
     }
 
     /**
-     * 상인이 생성될 위치를 반환, 위치가 없을경우 플레이어 바로 앞에 생성
+     * 상인이 생성될 위치를 반환, 플레이어 바로 앞에 생성
      * @param player
-     * @param args
      * @return location
      */
-    private Location getLocation(Player player, String[] args) {
+    private Location getLocation(Player player) {
         Location location = null;
         Location playerLocation = player.getLocation();
-        if (args != null && args.length >= 2) {
-            location = new Location(player.getWorld(),
-                    Double.parseDouble(args[0]),
-                    playerLocation.getY() + 2,
-                    Double.parseDouble(args[1]));
-        } else {
-            Vector direction = player.getLocation().getDirection();
-            playerLocation = player.getLocation().add(direction); // 플레이어 앞
-            location = new Location(player.getWorld(),
-                    playerLocation.getX(),
-                    playerLocation.getY() + 2,
-                    playerLocation.getZ());
-        }
+        Vector direction = player.getLocation().getDirection();
+        playerLocation = player.getLocation().add(direction); // 플레이어 앞
+        location = new Location(player.getWorld(),
+                playerLocation.getX(),
+                playerLocation.getY() + 2,
+                playerLocation.getZ());
         return location;
     }
 

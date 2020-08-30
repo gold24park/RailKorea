@@ -36,13 +36,7 @@ public class DestinationModule {
 
     public void whereIs(Player player, String[] args) {
         if (args != null && args.length > 0) {
-            Player targetPlayer = null;
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                if (p.getName().equalsIgnoreCase(args[0])) {
-                    targetPlayer = p;
-                    break;
-                }
-            }
+            Player targetPlayer = Util.findPlayer(args[0]);
             if (targetPlayer != null) {
                 player.sendMessage(ChatColor.GREEN + "[!] 해당 플레이어의 좌표가 목적지로 등록되었습니다.");
                 Location location = targetPlayer.getLocation();
