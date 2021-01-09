@@ -110,4 +110,4 @@ https://ci.dmulloy2.net/job/ProtocolLib/lastSuccessfulBuild/
 `ProtocolLib`은 [이 사이트](https://ci.dmulloy2.net/job/ProtocolLib/lastSuccessfulBuild/)에서 `jar` 파일을 받아 Plugin 설치와 동일하게 해주시면됩니다.
 
 ## 만든이
-파이리 (노란모자임)
+노란모자
