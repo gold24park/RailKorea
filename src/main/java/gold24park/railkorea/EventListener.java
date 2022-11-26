@@ -2,26 +2,24 @@ package gold24park.railkorea;
 
 import gold24park.railkorea.module.*;
 import gold24park.railkorea.util.Util;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.player.*;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.ScoreboardManager;
 
 public class EventListener implements Listener {
     private final Plugin main;
@@ -29,16 +27,33 @@ public class EventListener implements Listener {
     public EventListener(Plugin main) {
         this.main = main;
         main.getServer().getPluginManager().registerEvents(this, main);
+        Bukkit.getScheduler().runTaskTimerAsynchronously(main, new Runnable() {
+            @Override
+            public void run() {
+                World world = Bukkit.getWorld("world");
+                if (world != null) {
+                    CoinModule.getInstance(main).onTimeChanged(world);
+                    VillagerModule.getInstance(main).onTimeChanged(world);
+                    TabListModule.getInstance(main).onTimeChanged(world);
+                }
+            }
+        }, 0, 700L);
     }
 
     @EventHandler
     public void onInventoryClosed(InventoryCloseEvent event) {
         VillagerModule.getInstance(main).onInventoryClosed(event);
+        CoinModule.getInstance(main).onInventoryClosed(event);
     }
 
     @EventHandler
-    public void interact(PlayerInteractEvent  event) {
-        LocationModule.getInstance(main).openMap(event);
+    public void onInventoryOpen(InventoryOpenEvent event) {
+        CoinModule.getInstance(main).onInventoryOpen(event);
+    }
+
+    @EventHandler
+    public void interact(PlayerInteractEvent event) {
+        CoinModule.getInstance(main).onPlayerInteractEvent(event);
     }
 
     @EventHandler
@@ -56,6 +71,17 @@ public class EventListener implements Listener {
                 VillagerModule.getInstance(main).openTradingGUI(player, false);
             }
         }
+    }
+
+    @EventHandler
+    public void onDestroyCoin(EntityDamageEvent event) {
+        CoinModule.getInstance(main).onCoinDestroyed(event);
+    }
+
+
+    @EventHandler
+    public void onBlockDestroy(BlockBreakEvent event) {
+        CoinModule.getInstance(main).onBlockDestroy(event);
     }
 
     @EventHandler
@@ -89,46 +115,5 @@ public class EventListener implements Listener {
         Player player = event.getPlayer();
         ProfessionModule.getInstance(main).chat(player, event.getMessage());
         event.setCancelled(true);
-    }
-
-    // Player가 책 편집을 했을때
-    @EventHandler
-    public void onPlayerEditBook(PlayerEditBookEvent event) {
-        LocationModule.getInstance(main).saveMap(event);
-        main.saveConfig();
-    }
-
-    @EventHandler
-    public void onPlayerEditBook(PlayerTakeLecternBookEvent event) {
-        LocationModule.getInstance(main).saveMap(event);
-        main.saveConfig();
-    }
-
-    // Player가 움직일때 시간 업데이트
-    @EventHandler
-    public void onPlayerMove(PlayerMoveEvent e) {
-        Player player = e.getPlayer();
-        TabListModule.getInstance(main).update(player, false);
-        LocationModule.getInstance(main).checkBiome(player);
-
-        // 움직일때 체력 보이기 - 혼자서 테스트 못함
-        try {
-            ScoreboardManager manager = Bukkit.getScoreboardManager();
-            Scoreboard scoreboard = manager.getNewScoreboard();
-
-            Objective objective = scoreboard.registerNewObjective("showhealth", "health");
-            objective.setDisplaySlot(DisplaySlot.BELOW_NAME);
-            objective.setDisplayName("/ 20 HP");
-
-            player.setScoreboard(scoreboard);
-            player.setHealth(player.getHealth()); // Update Health
-        } catch (Exception exception) {
-
-        }
-    }
-
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent e) {
-        TabListModule.getInstance(main).update(e.getPlayer(), true);
     }
 }

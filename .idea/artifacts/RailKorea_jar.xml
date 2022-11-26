@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="RailKorea:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/RailKorea_jar</output-path>
+    <root id="archive" name="RailKorea.jar">
+      <element id="module-output" name="RailKorea" />
+    </root>
+  </artifact>
+</component>

@@ -6,7 +6,7 @@
 
     <groupId>gold24park</groupId>
     <artifactId>RailKorea</artifactId>
-    <version>2.0.1</version>
+    <version>3.0.1</version>
     <name>RailKorea</name>
     <properties>
         <java.version>1.8</java.version>
@@ -89,7 +89,7 @@
         <!-- ProtocolLib -->
         <repository>
             <id>dmulloy2-repo</id>
-            <url>https://repo.dmulloy2.net/nexus/repository/public/</url>
+            <url>https://repo.dmulloy2.net/repository/public/</url>
         </repository>
     </repositories>
 
@@ -104,7 +104,8 @@
         <dependency>
             <groupId>com.comphenix.protocol</groupId>
             <artifactId>ProtocolLib</artifactId>
-            <version>4.6.0-SNAPSHOT</version>
+            <version>4.7.0</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

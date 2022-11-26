@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 
 public class Util {
     public static boolean isEmpty(String text) {
@@ -56,6 +57,18 @@ public class Util {
             }
         }
         return targetPlayer;
+    }
+
+    public static Location getLocationInFrontOfPlayer(Player player) {
+        Location location = null;
+        Location playerLocation = player.getLocation();
+        Vector direction = player.getLocation().getDirection();
+        playerLocation = player.getLocation().add(direction); // 플레이어 앞
+        location = new Location(player.getWorld(),
+                playerLocation.getX(),
+                playerLocation.getY() + 2,
+                playerLocation.getZ());
+        return location;
     }
 
     public static Player findPlayer(String nickname, Player defaultPlayer) {

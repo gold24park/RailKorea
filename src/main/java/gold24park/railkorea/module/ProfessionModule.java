@@ -86,7 +86,7 @@ public class ProfessionModule {
         int level = main.getConfig().getInt("level." + player.getName());
         String message = "";
         if (Util.isEmpty(profession)) {
-            message += ChatColor.GRAY + "[직업없음] ";
+            message += ChatColor.GRAY;
         } else {
             message += getProfessionColor(level) + "[" + profession + "] ";
         }

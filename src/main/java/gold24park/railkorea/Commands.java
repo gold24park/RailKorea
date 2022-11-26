@@ -26,14 +26,20 @@ public class Commands {
 
     private void resolveOpUserCommand(Player sender, String commandLabel, String[] args) {
         switch (commandLabel) {
-            case "create_merchant":
-                VillagerModule.getInstance(main).createMerchant(sender, args);
+            case "coin_event":
+                CoinModule.getInstance(main).coinEvent(sender, args);
+                break;
+            case "coin_info":
+                CoinModule.getInstance(main).printCoinInfo(sender);
+                break;
+            case "issue_coin":
+                CoinModule.getInstance(main).issueCoin(sender, args);
+                break;
+            case "coin":
+                CoinModule.getInstance(main).coin(sender, args);
                 break;
             case "money":
                 MoneyModule.getInstance().money(sender, args);
-                break;
-            case "create_buyer":
-                VillagerModule.getInstance(main).createBuyer(sender, args);
                 break;
             case "register":
                 ProfessionModule.getInstance(main).register(sender, args);
@@ -49,20 +55,14 @@ public class Commands {
 
     private void resolveNormalUserCommand(Player sender, String commandLabel, String[] args) {
         switch (commandLabel) {
+            case "create_buyer":
+                VillagerModule.getInstance(main).createBuyer(sender, args);
+                break;
+            case "create_merchant":
+                VillagerModule.getInstance(main).createMerchant(sender, args);
+                break;
             case "home":
                 Home.run(sender);
-                break;
-            case "destination":
-                DestinationModule.getInstance(main).setDestination(sender, args);
-                break;
-            case "hud":
-                LocationModule.getInstance(main).setHudVisibility(sender, args);
-                break;
-            case "whereis":
-                DestinationModule.getInstance(main).whereIs(sender, args);
-                break;
-            case "map":
-                LocationModule.getInstance(main).openMapGUI(sender);
                 break;
         }
     }
