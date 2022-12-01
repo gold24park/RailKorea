@@ -105,26 +105,18 @@ public class VillagerModule {
         BUYING_ITEM_LIST.add(new StoreItem(Material.EMERALD, 1, 2));
     }
 
-    public void onTimeChanged(World world) {
-        if (world.getTime() >= 1000 && world.getTime() < 2000) {
-            if (!CoinModule.getInstance(main).isEnabled) {
-                return;
-            }
-
-            Random random = new Random();
-            int numberOfCoins = random.nextInt(Coin.coins.size() - 1);
+    public void banCoin(String[] args) {
+        if (args.length == 0) {
             dailyForbiddenCoinNames.clear();
-
-            while (dailyForbiddenCoinNames.size() < numberOfCoins) {
-                int randomIndex = random.nextInt(Coin.coins.size());
-                Coin randomCoin = (Coin) Coin.coins.values().toArray()[randomIndex];
-                dailyForbiddenCoinNames.add(randomCoin.displayName);
+            Bukkit.broadcastMessage(ChatColor.AQUA + "[NEWS] 오늘의 거래금지 코인은 없습니다");
+        } else {
+            for (String arg : args) {
+                Coin targetCoin = Coin.getCoin(arg);
+                if (targetCoin != null) {
+                    dailyForbiddenCoinNames.add(targetCoin.displayName);
+                }
             }
-            if (dailyForbiddenCoinNames.size() > 0) {
-                Bukkit.broadcastMessage(ChatColor.LIGHT_PURPLE + "[NEWS] 오늘의 거래금지 코인: " + String.join(", ", dailyForbiddenCoinNames));
-            } else {
-                Bukkit.broadcastMessage(ChatColor.LIGHT_PURPLE + "[NEWS] 오늘의 거래금지 코인은 없습니다");
-            }
+            Bukkit.broadcastMessage(ChatColor.AQUA + "[NEWS] 오늘의 거래금지 코인: " + String.join(", ", dailyForbiddenCoinNames));
         }
     }
 

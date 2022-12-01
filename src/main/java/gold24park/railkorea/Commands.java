@@ -26,8 +26,17 @@ public class Commands {
 
     private void resolveOpUserCommand(Player sender, String commandLabel, String[] args) {
         switch (commandLabel) {
-            case "coin_event":
-                CoinModule.getInstance(main).coinEvent(sender, args);
+            case "create_merchant":
+                ShopModule.getInstance(main).createCoinMerchant(sender, args);
+                break;
+            case "trigger_event":
+                CoinModule.getInstance(main).triggerCoinEvent(args);
+                break;
+            case "_reset_coin":
+                CoinModule.getInstance(main).resetCoin(sender);
+                break;
+            case "ban_coin":
+                ShopModule.getInstance(main).banCoin(args);
                 break;
             case "coin_info":
                 CoinModule.getInstance(main).printCoinInfo(sender);
@@ -38,29 +47,14 @@ public class Commands {
             case "coin":
                 CoinModule.getInstance(main).coin(sender, args);
                 break;
-            case "money":
-                MoneyModule.getInstance().money(sender, args);
-                break;
             case "register":
                 ProfessionModule.getInstance(main).register(sender, args);
-                break;
-            case "edit_merchant":
-                VillagerModule.getInstance(main).openMerchantInventorySettings(sender);
-                break;
-            case "edit_buyer":
-                VillagerModule.getInstance(main).openBuyerInventorySettings(sender);
                 break;
         }
     }
 
     private void resolveNormalUserCommand(Player sender, String commandLabel, String[] args) {
         switch (commandLabel) {
-            case "create_buyer":
-                VillagerModule.getInstance(main).createBuyer(sender, args);
-                break;
-            case "create_merchant":
-                VillagerModule.getInstance(main).createMerchant(sender, args);
-                break;
             case "home":
                 Home.run(sender);
                 break;

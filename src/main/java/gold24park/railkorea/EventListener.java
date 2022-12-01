@@ -12,6 +12,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
@@ -32,12 +33,10 @@ public class EventListener implements Listener {
             public void run() {
                 World world = Bukkit.getWorld("world");
                 if (world != null) {
-                    CoinModule.getInstance(main).onTimeChanged(world);
-                    VillagerModule.getInstance(main).onTimeChanged(world);
                     TabListModule.getInstance(main).onTimeChanged(world);
                 }
             }
-        }, 0, 700L);
+        }, 0, 900L);
     }
 
     @EventHandler
@@ -52,25 +51,18 @@ public class EventListener implements Listener {
     }
 
     @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        ShopModule.getInstance(main).onInventoryClick(event);
+    }
+
+    @EventHandler
     public void interact(PlayerInteractEvent event) {
         CoinModule.getInstance(main).onPlayerInteractEvent(event);
     }
 
     @EventHandler
     public void interactEntity(PlayerInteractEntityEvent event) {
-        Player player = event.getPlayer();
-        if (event.getRightClicked() instanceof Villager) {
-            Villager villager = (Villager) event.getRightClicked();
-            String villagerName = villager.getCustomName();
-
-            if (VillagerModule.getInstance(main).isMerchant(villagerName)) {
-                event.setCancelled(true);
-                VillagerModule.getInstance(main).openTradingGUI(player, true);
-            } else if (VillagerModule.getInstance(main).isBuyer(villagerName)) {
-                event.setCancelled(true);
-                VillagerModule.getInstance(main).openTradingGUI(player, false);
-            }
-        }
+        ShopModule.getInstance(main).interactEntity(event);
     }
 
     @EventHandler

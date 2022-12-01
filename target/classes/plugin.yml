@@ -1,29 +1,25 @@
 name: RailKorea
-version: 2.0.1
+version: 3.0.1
 main: gold24park.railkorea.Main
 depend: [ProtocolLib]
 api-version: 1.19
 commands:
-  coin_event:
-    description: /coin_event [start|stop] 코인 뉴스와, 코인관련 이벤트가 활성화/중지됩니다.
+  _reset_coin:
+    description: 코인 발행 정보를 리셋합니다.
+  trigger_event:
+    description: 랜덤한 코인 이벤트가 발생됩니다.
+  ban_coin:
+    description: 설정한 코인들이 금지됩니다. 아무것도 적지않으면 모든 코인들이 활성화됩니다.
   coin_info:
     description: /coin_info 코인 발행정보를 한 눈에 살펴봅니다.
-  money:
-    description: /money [amount] 시세설정을 위한 가격 아이템을 획득합니다.
   issue_coin:
     description: /issue_coin [coin_name] [amount] 코인 발행량을 조절합니다.
   coin:
     description: /coin [player] [coin_name] [amount] 플레이어에게 특정코인을 지정한 만큼 줍니다.
   create_merchant:
-    description: /create_merchant [player] 플레이어의 앞에 매입인을 스폰합니다.
-  create_buyer:
-    description: /create_buyer [player] 플레이어의 앞에 매입인을 스폰합니다.
+    description: /create_merchant [player] [coin] 플레이어의 앞에 매입인을 스폰합니다.
   register:
     description: /register [player] [tag] [level] 플레이어에게 태그를 달아줍니다.
-  edit_merchant:
-    description: /edit_merchant 상점 주인이 매입하는 품목과 가격을 수정합니다.
-  edit_buyer:
-    description: /edit_buyer 전당포 주인이 매입하는 품목과 가격을 수정합니다.
   home:
     description: /home 내 스폰 지점 좌표를 알려줍니다.
 permissions:

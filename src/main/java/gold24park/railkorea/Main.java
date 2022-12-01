@@ -1,14 +1,18 @@
 package gold24park.railkorea;
 
 
+import gold24park.railkorea.model.ShopItem;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class Main extends JavaPlugin implements Listener {
 
     private Commands commands;
+
     @Override
     public void onEnable() {
         this.saveDefaultConfig();
